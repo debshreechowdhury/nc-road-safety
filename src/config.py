@@ -54,7 +54,9 @@ FULL_YEARS = [2021, 2022, 2023, 2024, 2025]
 # Our primary outcome is a "serious crash," defined as K or A.
 SERIOUS_SEVERITIES = ["K", "A"]
 
-
+# Only crashes with a known severity are included in the denominator
+# when calculating the Serious Outcome Rate.
+KNOWN_SEVERITIES = ["K", "A", "B", "C", "O"]
 # ---------------------------------------------------------------------
 # Crash-factor variables
 # ---------------------------------------------------------------------

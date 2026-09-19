@@ -8,8 +8,10 @@ logic without downloading the large raw data file.
 
 import pandas as pd
 import pytest
+import math
 
 from src.metrics import (
+    known_severity_crash_count,
     serious_crash_count,
     serious_rate_per_1000,
     severity_multiplier,
@@ -143,3 +145,39 @@ def test_severity_multiplier():
     )
 
     assert result == 2.0
+
+def test_unknown_severity_excluded_from_rate():
+    df = pd.DataFrame({
+        "CrshSeverity": ["K", "A", "B", "U"]
+    })
+
+    df["is_serious"] = df["CrshSeverity"].isin(["K", "A"])
+
+    rate = serious_rate_per_1000(df)
+
+    # K and A are serious.
+    # Known severities are K, A, and B.
+    # U is excluded from the denominator.
+    #
+    # 2 / 3 * 1000 = 666.67
+    assert rate == pytest.approx(666.67, rel=1e-3)
+
+
+def test_known_severity_crash_count():
+    df = pd.DataFrame({
+        "CrshSeverity": ["K", "A", "B", "O", "U"]
+    })
+
+    assert known_severity_crash_count(df) == 4
+
+
+def test_serious_rate_returns_nan_when_all_severity_unknown():
+    df = pd.DataFrame({
+        "CrshSeverity": ["U", "U", "U"]
+    })
+
+    df["is_serious"] = False
+
+    rate = serious_rate_per_1000(df)
+
+    assert math.isnan(rate)

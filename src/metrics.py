@@ -26,74 +26,75 @@ not be interpreted as causal estimates or as complete measures of road
 danger because traffic exposure is not included in the current dataset.
 """
 
+"""Shared crash-severity metrics used across project analyses."""
+
 import math
 
 import pandas as pd
 
+from src.config import KNOWN_SEVERITIES
 
-def serious_crash_count(df: pd.DataFrame) -> int:
+
+def serious_crash_count(df):
     """
-    Return the number of crashes classified as fatal or serious injury.
+    Return the number of crashes classified as serious.
 
-    The dataframe must contain the shared Boolean `is_serious` feature
-    created by `src.preprocessing.add_shared_features()`.
+    A serious crash is defined during preprocessing as a crash with
+    severity K (fatal) or A (serious/disabling injury).
     """
-
     return int(df["is_serious"].fillna(False).sum())
 
 
-def serious_rate_per_1000(df: pd.DataFrame) -> float:
+def known_severity_crash_count(df):
     """
-    Calculate serious crashes per 1,000 recorded crashes.
+    Return the number of crashes with a known severity.
 
-    Formula
-    -------
-    serious crashes / all crashes * 1,000
-
-    Returns NaN for an empty dataframe.
+    NCDOT severity codes K, A, B, C, and O are considered known.
+    Records coded U (unknown severity) are excluded.
     """
+    return int(df["CrshSeverity"].isin(KNOWN_SEVERITIES).sum())
 
-    if len(df) == 0:
+
+def serious_rate_per_1000(df):
+    """
+    Calculate serious crashes per 1,000 crashes with known severity.
+
+    Serious crashes are severity K or A.
+
+    Crashes coded U (unknown severity) are excluded from the
+    denominator rather than being treated as non-serious.
+
+    Returns NaN when no crashes with known severity are available.
+    """
+    known_severity_mask = df["CrshSeverity"].isin(KNOWN_SEVERITIES)
+
+    denominator = int(known_severity_mask.sum())
+
+    if denominator == 0:
         return math.nan
 
-    return 1000 * df["is_serious"].fillna(False).mean()
+    serious_count = int(
+        df.loc[known_severity_mask, "is_serious"]
+        .fillna(False)
+        .sum()
+    )
+
+    return 1000 * serious_count / denominator
 
 
-def severity_multiplier(
-    group_df: pd.DataFrame,
-    statewide_rate_per_1000: float,
-) -> float:
+def severity_multiplier(group_df, statewide_rate_per_1000):
     """
-    Compare a subgroup's serious-outcome rate with the statewide rate.
+    Compare a group's Serious Outcome Rate with the statewide rate.
 
-    Formula
-    -------
-    subgroup serious rate / statewide serious rate
+    A value of:
+        1.0 = same as statewide rate
+        >1.0 = higher than statewide rate
+        <1.0 = lower than statewide rate
 
-    Parameters
-    ----------
-    group_df : pandas.DataFrame
-        Subset of crash records representing a county, crash factor,
-        geographic category, or other group.
-
-    statewide_rate_per_1000 : float
-        Serious Outcome Rate for the full statewide analysis population.
-
-    Returns
-    -------
-    float
-        Relative serious-outcome rate.
-
-    Examples
-    --------
-    1.0
-        Same rate as the statewide baseline.
-
-    2.0
-        Serious outcomes occur twice as frequently among recorded
-        crashes in this group as in the statewide crash population.
+    This is a descriptive comparison of recorded crash outcomes.
+    It should not be interpreted as a causal measure or as a complete
+    measure of roadway danger without an exposure denominator.
     """
-
     if (
         statewide_rate_per_1000 is None
         or pd.isna(statewide_rate_per_1000)
@@ -102,5 +103,8 @@ def severity_multiplier(
         return math.nan
 
     group_rate = serious_rate_per_1000(group_df)
+
+    if pd.isna(group_rate):
+        return math.nan
 
     return group_rate / statewide_rate_per_1000
