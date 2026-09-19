@@ -49,6 +49,7 @@ FULL_YEARS = [2021, 2022, 2023, 2024, 2025]
 # B = Evident injury
 # C = Possible injury
 # O = No injury / property-damage-only crash
+# U = Unknown severity
 #
 # Our primary outcome is a "serious crash," defined as K or A.
 SERIOUS_SEVERITIES = ["K", "A"]
