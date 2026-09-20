@@ -242,3 +242,7 @@ data/processed/*.csv
 # Temporary files
 # ---------------------------------------------------------
 *.tmp
+
+# External geographic boundary data
+data/external/*.zip
+!data/external/README.md
