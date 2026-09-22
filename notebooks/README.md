@@ -282,8 +282,140 @@ or risk per mile traveled.
 
 # Reproducing the Analysis
 
-## 1. Clone the Repository
+Step-by-Step Instructions to Reproduce the Analysis
+1. Clone the Repository
 
-```bash
+Clone the GitHub repository and navigate to the project directory:
+
 git clone https://github.com/debshreechowdhury/nc-road-safety.git
 cd nc-road-safety
+
+2. Set Up the Python Environment
+
+Create and activate a virtual environment:
+
+python -m venv .venv
+
+# macOS/Linux
+source .venv/bin/activate
+
+# Windows
+# .venv\Scripts\activate
+
+Install the required dependencies:
+
+pip install -r requirements.txt
+3. Prepare the Data
+
+The project uses two complementary crash datasets:
+
+NCDOT Statewide Crash Data (2021–2025) is used for the North Carolina county-level geography and severity analysis. Place the downloaded NCDOT crash file in the location expected by src/config.py.
+
+NHTSA Crash Report Sampling System (CRSS) data (2016–2020) is used for the national temporal and road-user analysis. Place the yearly accident, person, and vehicle files in the project's data directory as expected by the notebooks:
+
+acc_16.csv ... acc_20.csv
+pers_16.csv ... pers_20.csv
+veh_16.csv ... veh_20.csv
+
+For the North Carolina maps, also place the Census county boundary ZIP file in:
+
+data/external/cb_2025_us_county_500k.zip
+4. Launch Jupyter
+
+From the repository root, start Jupyter:
+
+jupyter notebook
+
+or:
+
+jupyter lab
+
+Open the notebooks/ directory. Run each notebook from top to bottom so that preprocessing, engineered features, calculations, and visualizations are reproduced in the intended order.
+
+5. Run the NCDOT Data Exploration
+
+Run:
+
+notebooks/00_data_exploration.ipynb
+
+This notebook loads and validates the NCDOT crash data, restricts the analysis to the complete years 2021–2025, examines missing values and severity categories, and validates the shared engineered features.
+
+It also establishes the project definition of a serious outcome (K+A) and the statewide severity baseline.
+
+6. Run the North Carolina Geography & Severity Analysis
+
+Run:
+
+notebooks/01_geography_severity_analysis.ipynb
+
+This notebook aggregates crash records across North Carolina's 100 counties and joins the results with Census county boundaries.
+
+It reproduces the main geographic visualizations, including:
+
+Recorded crash frequency by county
+Serious-outcome rate by county
+Rural crash share and severity patterns
+County-level comparisons such as Mecklenburg vs. Graham
+
+The main severity metric is:
+
+Serious Outcome Rate =
+(K + A crashes / crashes with known severity) × 1,000
+
+Unknown-severity (U) crashes are excluded from the denominator.
+
+7. Run the CRSS Data Exploration
+
+Run:
+
+notebooks/01_data_exploration.ipynb
+
+This notebook explores the NHTSA CRSS 2016–2020 files and verifies the crash-, person-, and vehicle-level data needed for the national analysis.
+
+It provides the initial understanding of CRSS variables and data structure used by the subsequent notebooks.
+
+8. Run the CRSS Temporal Findings Analysis
+
+Run:
+
+notebooks/02_data_findings.ipynb
+
+This notebook combines the yearly CRSS accident files and engineers features related to crash severity and time of day.
+
+CRSS sampling weights are used to produce weighted estimates. The analysis compares when crashes occur most frequently with when recorded crashes have the highest severe-outcome rates.
+
+9. Run the Road-User Vulnerability Analysis
+
+Run:
+
+notebooks/03_road_user_vulnerability.ipynb
+
+This notebook combines CRSS accident, person, and vehicle records to compare injury severity across different road-user groups.
+
+The analysis identifies groups such as:
+
+Pedestrians
+Motorcyclists
+Bicyclists
+Enclosed-vehicle occupants
+
+It uses person-level CRSS weights and examines serious/fatal injury outcomes, including patterns across years and during late-night hours.
+
+10. Complete Notebook Execution Order
+
+For complete reproducibility, run the notebooks in the following order:
+
+1. notebooks/00_data_exploration.ipynb
+   → NCDOT data validation and initial EDA
+
+2. notebooks/01_geography_severity_analysis.ipynb
+   → North Carolina county geography and severity analysis
+
+3. notebooks/01_data_exploration.ipynb
+   → CRSS data exploration and validation
+
+4. notebooks/02_data_findings.ipynb
+   → CRSS temporal crash and severity analysis
+
+5. notebooks/03_road_user_vulnerability.ipynb
+   → CRSS road-user vulnerability analysis
