@@ -115,7 +115,12 @@ https://connect.ncdot.gov/business/DMV/DMV%20Documents/DMV-349%20Code%20Sheets.p
 
 NCDOT crash-data resources:
 
-https://connect.ncdot.gov/resources/safety/Pages/TEAAS-Crash-Data-System.aspx
+https://ncdot.maps.arcgis.com/home/item.html?id=08ada689aca34927b0f78006fa885d36#overview
+
+US Census Data:
+
+https://www2.census.gov/geo/tiger/GENZ2025/shp/
+
 
 ### Geographic Boundary Data
 
